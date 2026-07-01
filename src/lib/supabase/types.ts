@@ -58,6 +58,26 @@ export interface Database {
         >;
         Relationships: [];
       };
+      game_sessions: {
+        Row: {
+          room_code: string;
+          config: Record<string, unknown>;
+          assignments: Record<string, unknown>;
+          phase: string;
+          submissions: Record<string, unknown>;
+          created_at: string;
+        };
+        Insert: {
+          room_code: string;
+          config?: Record<string, unknown>;
+          assignments?: Record<string, unknown>;
+          phase?: string;
+          submissions?: Record<string, unknown>;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["game_sessions"]["Insert"]>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

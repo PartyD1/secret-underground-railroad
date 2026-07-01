@@ -2,11 +2,13 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { kickPlayer, renamePlayer } from "@/app/room/actions";
+import { MIN_CHAMELEON_PLAYERS } from "@/lib/chameleon";
 import type { RoomStatus, GameType, ConnectionStatus } from "@/lib/supabase/types";
 
 interface Player {
@@ -105,6 +107,31 @@ export function Lobby({
     };
   }, [room.code, currentPlayerId, router]);
 
+  useEffect(() => {
+    // Once the host starts the game (from this device or another),
+    // everyone waiting in the lobby needs to move to the reveal screen.
+    const channel = supabaseBrowser
+      .channel(`room-status-${room.code}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "rooms",
+          filter: `code=eq.${room.code}`,
+        },
+        (payload) => {
+          const status = (payload.new as { status: RoomStatus }).status;
+          if (status === "reveal") router.push(`/room/${room.code}/reveal`);
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabaseBrowser.removeChannel(channel);
+    };
+  }, [room.code, router]);
+
   function handleCopy() {
     navigator.clipboard.writeText(room.code).then(() => {
       setCopyLabel("Copied!");
@@ -149,6 +176,19 @@ export function Lobby({
             ))}
           </ul>
         </div>
+
+        {isHost && room.game_type === "chameleon" && (
+          <Button
+            render={<Link href={`/room/${room.code}/setup`} />}
+            nativeButton={false}
+            size="lg"
+            disabled={players.length < MIN_CHAMELEON_PLAYERS}
+          >
+            {players.length < MIN_CHAMELEON_PLAYERS
+              ? `Need ${MIN_CHAMELEON_PLAYERS}+ players to configure`
+              : "Configure Game"}
+          </Button>
+        )}
       </div>
     </div>
   );
