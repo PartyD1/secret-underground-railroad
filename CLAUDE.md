@@ -2,6 +2,7 @@
 
 This file is the source of truth for this project. Reference it before implementing any feature. If a requirement here conflicts with a request in chat, ask the user rather than silently picking one.
 
+IMPORTANT: FREQUENTLY COMMIT. EVERY SMALL FEATURE SHOULD BE INDEPENDENTLY COMMITED SO I HAVE THE VERSION HISTORY.
 ---
 
 ## 1. Project Summary
