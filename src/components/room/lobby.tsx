@@ -77,7 +77,28 @@ export function Lobby({
           }
         },
       )
-      .subscribe();
+      .subscribe((status) => {
+        // Postgres changes that happen while the socket is still
+        // handshaking are never replayed, so once the subscription is
+        // confirmed live, reconcile against a fresh fetch to catch
+        // anything missed in that window (e.g. a player who joined a
+        // beat after this page loaded).
+        if (status === "SUBSCRIBED") {
+          supabaseBrowser
+            .from("players")
+            .select("id, display_name, joined_at, connection_status")
+            .eq("room_code", room.code)
+            .then(({ data }) => {
+              if (!data) return;
+              if (!data.some((p) => p.id === currentPlayerId)) {
+                toast.error("You were removed from the room.");
+                router.push("/");
+                return;
+              }
+              setPlayers(data);
+            });
+        }
+      });
 
     return () => {
       supabaseBrowser.removeChannel(channel);

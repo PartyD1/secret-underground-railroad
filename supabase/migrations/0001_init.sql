@@ -63,6 +63,11 @@ create index players_room_code_idx on players(room_code);
 alter publication supabase_realtime add table rooms;
 alter publication supabase_realtime add table players;
 
+-- DELETE payloads only carry primary-key columns by default, so a
+-- Realtime filter on room_code (a non-PK column) silently drops kick
+-- events without this. Full row needed on delete for the filter to match.
+alter table players replica identity full;
+
 -- Hourly sweep for the 24h room expiry policy. Requires the pg_cron
 -- extension (enable it in Supabase Dashboard -> Database -> Extensions
 -- if this fails when running the migration).
