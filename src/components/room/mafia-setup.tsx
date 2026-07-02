@@ -26,11 +26,12 @@ export function MafiaSetup({
 }) {
   const router = useRouter();
   const [playerCount, setPlayerCount] = useState(initialPlayerCount);
-  const [config, setConfig] = useState<MafiaConfig>(() =>
-    suggestMafiaConfig(initialPlayerCount),
-  );
-  const [touched, setTouched] = useState(false);
+  const [override, setOverride] = useState<MafiaConfig | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  // Suggest a fresh default as players join/leave, unless the host has
+  // already started tweaking the steppers themselves.
+  const config = override ?? suggestMafiaConfig(playerCount);
 
   useEffect(() => {
     const channel = supabaseBrowser
@@ -60,18 +61,11 @@ export function MafiaSetup({
     };
   }, [roomCode]);
 
-  // Keep suggesting a fresh default as players join/leave, unless the
-  // host has already started tweaking the steppers themselves.
-  useEffect(() => {
-    if (!touched) setConfig(suggestMafiaConfig(playerCount));
-  }, [playerCount, touched]);
-
   const canStart = playerCount >= MIN_MAFIA_PLAYERS;
   const validationError = canStart ? validateMafiaConfig(config, playerCount) : null;
 
   function adjust(role: keyof MafiaConfig, delta: number) {
-    setTouched(true);
-    setConfig((prev) => ({ ...prev, [role]: Math.max(0, prev[role] + delta) }));
+    setOverride({ ...config, [role]: Math.max(0, config[role] + delta) });
   }
 
   function handleStart() {
