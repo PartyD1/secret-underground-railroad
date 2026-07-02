@@ -4,6 +4,7 @@ import { verifyHost } from "@/lib/auth";
 import { normalizeRoomCode } from "@/lib/room-code";
 import { ChameleonSetup } from "@/components/room/chameleon-setup";
 import { MafiaSetup } from "@/components/room/mafia-setup";
+import { EmpireSetup } from "@/components/room/empire-setup";
 
 export default async function RoomSetupPage({
   params,
@@ -23,12 +24,8 @@ export default async function RoomSetupPage({
   const host = await verifyHost(code);
   if (!host) redirect(`/room/${code}`);
 
-  // Empire hasn't landed yet — everything else routes here once its
-  // setup screen exists.
-  if (room.game_type !== "chameleon" && room.game_type !== "mafia") {
-    redirect(`/room/${code}`);
-  }
   if (room.status === "reveal") redirect(`/room/${code}/reveal`);
+  if (room.status === "in_progress") redirect(`/room/${code}/submit`);
 
   const { count } = await supabaseServer
     .from("players")
@@ -37,6 +34,9 @@ export default async function RoomSetupPage({
 
   if (room.game_type === "mafia") {
     return <MafiaSetup roomCode={code} initialPlayerCount={count ?? 0} />;
+  }
+  if (room.game_type === "empire") {
+    return <EmpireSetup roomCode={code} initialPlayerCount={count ?? 0} />;
   }
 
   return <ChameleonSetup roomCode={code} initialPlayerCount={count ?? 0} />;

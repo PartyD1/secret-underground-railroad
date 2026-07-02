@@ -123,6 +123,7 @@ export function Lobby({
         (payload) => {
           const status = (payload.new as { status: RoomStatus }).status;
           if (status === "reveal") router.push(`/room/${room.code}/reveal`);
+          if (status === "in_progress") router.push(`/room/${room.code}/submit`);
         },
       )
       .subscribe();

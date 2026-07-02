@@ -28,6 +28,7 @@ export default async function RoomPage({
   // Stale lobby view after a refresh/direct nav — route back into the
   // right screen for wherever the game actually is.
   if (room.status === "reveal") redirect(`/room/${code}/reveal`);
+  if (room.status === "in_progress") redirect(`/room/${code}/submit`);
   if (room.status === "setup" && room.host_id === player.playerId) {
     redirect(`/room/${code}/setup`);
   }

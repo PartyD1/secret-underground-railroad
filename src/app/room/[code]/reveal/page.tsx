@@ -4,8 +4,10 @@ import { verifyPlayer } from "@/lib/auth";
 import { normalizeRoomCode } from "@/lib/room-code";
 import { getMyChameleonAssignment } from "@/app/room/chameleon-actions";
 import { getMyMafiaAssignment } from "@/app/room/mafia-actions";
+import { getEmpireReveal } from "@/app/room/empire-actions";
 import { RevealCard } from "@/components/room/reveal-card";
 import { MafiaRevealCard } from "@/components/room/mafia-reveal-card";
+import { EmpireRevealCard } from "@/components/room/empire-reveal-card";
 
 export default async function RoomRevealPage({
   params,
@@ -34,6 +36,11 @@ export default async function RoomRevealPage({
     return (
       <MafiaRevealCard roomCode={code} assignment={assignment} isHost={isHost} />
     );
+  }
+
+  if (room.game_type === "empire") {
+    const reveal = await getEmpireReveal(code);
+    return <EmpireRevealCard roomCode={code} reveal={reveal} isHost={isHost} />;
   }
 
   const assignment = await getMyChameleonAssignment(code);
